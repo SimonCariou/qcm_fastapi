@@ -1,3 +1,7 @@
 import pandas as pd
+import csv
 
-df_questions = pd.read_csv("./questions.csv")
+q = open("questions.csv", "r")
+dict_reader = csv.DictReader(q)
+
+questions = list(dict_reader)
