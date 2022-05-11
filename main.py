@@ -7,21 +7,21 @@ import asyncio
 from questions import df_questions as questions
 
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 
 class Question(BaseModel):
     """ Model describing a question.
     The reponseD is optional as sometimes there isn't one.
     """
-    
+
     question_id: int
-    question: str
-    subject: str
+    question: Optional[str]
+    subject: List[str]
     use: str
-    correct: str
-    responseA: str
-    responseB: str
-    responseC: str
+    correct: Optional[str]
+    responseA: Optional[str]
+    responseB: Optional[str]
+    responseC: Optional[str]
     responseD: Optional[str]
 
 
