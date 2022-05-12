@@ -44,15 +44,15 @@ class NumberOfQuestionsOutOfBound(Exception):
         return
 
 @api.exception_handler(NumberOfQuestionsOutOfBound)
-def NumberOfQuestionsOutOfBoundHandler(request: Request, exception: NumberOfQuestionsOutOfBound):
+async def NumberOfQuestionsOutOfBoundHandler(request: Request, exception: NumberOfQuestionsOutOfBound):
     return JSONResponse (status_code = 500, content = {"message": "Number of questions in the request out of bounds. Must be one of [5, 10, 20]"})
 
 @api.get("/", responses = responses)
-def get_root():
+async def get_root():
     return {"Greetings": "The API is running"}
 
 @api.post("/questions", responses = responses)
-def post_questions_details(nb_questions: int, question: Question):
+async def post_questions_details(nb_questions: int, question: Question):
     """ Returns only the question and the 4 possible answers being given a number as parameter (5, 10 or 20),
     and a Question with only 'use' and 'subject' in the body (all the other attributes are optional).
 
