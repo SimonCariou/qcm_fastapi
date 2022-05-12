@@ -1,4 +1,3 @@
-import pandas as pd
 import csv
 
 q = open("questions.csv", "r")

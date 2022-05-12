@@ -1,7 +1,14 @@
 
 # Eval FastAPI - DataScientest
 
-## Routes & use
+## Use
+
+1. git clone the project
+1. install the python packages required by the app the work properly, in requirements.txt
+1. run `uvicorn main:api --reload`
+1. Run the following curl commands from a terminal
+
+## Routes
 
 ### GET /
 Allows a user to see if the api is running:
@@ -39,7 +46,7 @@ curl -X 'POST' \
 curl -X 'PUT' \
   'http://localhost:8000/add' \
   -H 'accept: application/json' \
-  -H 'Authorization: Basic YWRtaW46NGRtMU4g' \
+  -H 'Authorization: Basic YWRtaW46NGRtMU4=' \
   -H 'Content-Type: application/json' \
   -d '{
   "question": "Quel est mon nom ?",
