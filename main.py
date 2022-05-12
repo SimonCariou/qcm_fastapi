@@ -4,8 +4,6 @@ from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from passlib.context import CryptContext
 
-import asyncio
-
 from questions import questions
 from auth_users import authorized_users
 
@@ -76,12 +74,12 @@ class NumberOfQuestionsOutOfBound(Exception):
 async def NumberOfQuestionsOutOfBoundHandler(request: Request, exception: NumberOfQuestionsOutOfBound):
     return JSONResponse (status_code = 500, content = {"message": "Number of questions in the request out of bounds. Must be one of [5, 10, 20]"})
 
-@api.get("/", responses = responses)
+@api.get("/", responses = responses, name = "Check if the API is running")
 async def get_root():
     return {"Greetings": "The API is running"}
 
 
-@api.post("/questions", responses = responses)
+@api.post("/questions", responses = responses, name = "Retrieve a question base on a use and some subjects")
 async def post_questions_details(nb_questions: int, question: Question, isUserAuthenticated: bool = Depends(get_auth_status)):
     """ Returns only the question and the 4 possible answers being given a number as parameter (5, 10 or 20),
     and a Question with only 'use' and 'subject' in the body (all the other attributes are optional).
@@ -116,7 +114,7 @@ async def post_questions_details(nb_questions: int, question: Question, isUserAu
     return results
 
 
-@api.put("/add")
+@api.put("/add", responses = responses, name = "Add a question. Works only with admin access")
 async def add_question(question_to_add: Optional[Question], isAdmin: bool = Depends(get_admin_auth_status)):
     """ Allow the admin to add a question in the database.
     In the request body, the admin should specify the following body
@@ -156,7 +154,7 @@ async def add_question(question_to_add: Optional[Question], isAdmin: bool = Depe
 
     return new_question
 
-@api.get("/last", responses = responses)
+@api.get("/last", responses = responses, name = "Get the last question in the db. Works only with admin access")
 async def get_last_question(isAdmin: bool = Depends(get_admin_auth_status)):
     """Allows the admin the check that his question has been added to the database
     """
