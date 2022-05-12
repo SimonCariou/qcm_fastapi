@@ -49,7 +49,7 @@ def NumberOfQuestionsOutOfBoundHandler(request: Request, exception: NumberOfQues
 
 @api.get("/", responses = responses)
 def get_root():
-    return {"Greeting": "Got root"}
+    return {"Greetings": "The API is running"}
 
 @api.post("/questions", responses = responses)
 def post_questions_details(nb_questions: int, question: Question):
