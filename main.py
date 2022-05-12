@@ -1,9 +1,13 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, status, Depends
 from fastapi.responses import JSONResponse
+
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from passlib.context import CryptContext
 
 import asyncio
 
 from questions import questions
+from auth_users import authorized_users
 
 from random import shuffle
 
@@ -36,6 +40,19 @@ api = FastAPI(
         have one or multiple correct answers and the questions are ordered by category",
     version="1.0.0"
 )
+security = HTTPBasic()
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def get_auth_status(credentials: HTTPBasicCredentials = Depends(security)):
+    username = credentials.username
+    if not(authorized_users.get(username)) or not(pwd_context.verify(credentials.password, authorized_users[username]['hashed_password'])):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return True
 
 class NumberOfQuestionsOutOfBound(Exception):
     """ Raised when trying to reach post / questions with a number of questions different from 5, 10 or 20.
@@ -52,7 +69,7 @@ async def get_root():
     return {"Greetings": "The API is running"}
 
 @api.post("/questions", responses = responses)
-async def post_questions_details(nb_questions: int, question: Question):
+async def post_questions_details(nb_questions: int, question: Question, isUserAuthenticated: bool = Depends(get_auth_status)):
     """ Returns only the question and the 4 possible answers being given a number as parameter (5, 10 or 20),
     and a Question with only 'use' and 'subject' in the body (all the other attributes are optional).
 
