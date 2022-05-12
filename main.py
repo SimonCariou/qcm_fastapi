@@ -1,6 +1,4 @@
-from ast import Raise
-from fastapi import FastAPI, HTTPException
-from fastapi import Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 import asyncio
@@ -25,6 +23,13 @@ class Question(BaseModel):
     responseC: Optional[str]
     responseD: Optional[str]
 
+responses = {
+    200: {"message": "OK"},
+    404: {"message": "Item not found"},
+    302: {"message": "The item was moved"},
+    403: {"message": "Not enough privileges"}
+}
+
 api = FastAPI(
     title='QCM API',
     description="Manage a list of questions as well as their possible answers. The questions\
@@ -32,20 +37,21 @@ api = FastAPI(
     version="1.0.0"
 )
 
-@api.get("/")
+class NumberOfQuestionsOutOfBound(Exception):
+    """ Raised when trying to reach post / questions with a number of questions different from 5, 10 or 20.
+    """
+    def __init__(self):
+        return
+
+@api.exception_handler(NumberOfQuestionsOutOfBound)
+def NumberOfQuestionsOutOfBoundHandler(request: Request, exception: NumberOfQuestionsOutOfBound):
+    return JSONResponse (status_code = 500, content = {"message": "Number of questions in the request out of bounds. Must be one of [5, 10, 20]"})
+
+@api.get("/", responses = responses)
 def get_root():
     return {"Greeting": "Got root"}
 
-"""
-@api.get("/questions")
-def get_all_questions():
-    try:
-       return questions
-    except:
-         return {}
-"""
-
-@api.post("/questions")
+@api.post("/questions", responses = responses)
 def post_questions_details(nb_questions: int, question: Question):
     """ Returns only the question and the 4 possible answers being given a number as parameter (5, 10 or 20),
     and a Question with only 'use' and 'subject' in the body (all the other attributes are optional).
@@ -60,21 +66,25 @@ def post_questions_details(nb_questions: int, question: Question):
         "use": "Test de validation"
         }
     """
-    try:
-        if (nb_questions == 5 or nb_questions == 10 or nb_questions == 20 ):
-            question_list = list(filter(lambda q: q.get('use') == question.use and q.get('subject') in question.subject , questions))
-            shuffle(question_list)
-            
-            quest = question_list[:nb_questions]
 
-            dict_filter = lambda x, y: dict([ (i,x[i]) for i in x if i in set(y) ])
-            wanted_keys = ("question", "responseA", "responseB", "responseC", "responseD")
-            return [dict_filter(quest[x], wanted_keys) for x in range(0, len(quest)) ]
+    results = {}
+
+    if (nb_questions == 5 or nb_questions == 10 or nb_questions == 20 ):
+        question_list = list(filter(lambda q: q.get('use') == question.use and q.get('subject') in question.subject , questions))
+        shuffle(question_list)
         
-        else:
-            return {}
+        quest = question_list[:nb_questions]
 
-    except:
-        return {}
+        dict_filter = lambda x, y: dict([ (i,x[i]) for i in x if i in set(y) ])
+        wanted_keys = ("question", "responseA", "responseB", "responseC", "responseD")
+
+        results = [dict_filter(quest[x], wanted_keys) for x in range(0, len(quest)) ]
+    
+    else:
+        raise NumberOfQuestionsOutOfBound()
+
+    return results
+
+
    
 
