@@ -54,6 +54,17 @@ def get_auth_status(credentials: HTTPBasicCredentials = Depends(security)):
         )
     return True
 
+
+def get_admin_auth_status(credentials: HTTPBasicCredentials = Depends(security)):
+    username = "admin"
+    if not(authorized_users.get(username)) or not(pwd_context.verify(credentials.password, authorized_users[username]['hashed_password'])):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return True
+
 class NumberOfQuestionsOutOfBound(Exception):
     """ Raised when trying to reach post / questions with a number of questions different from 5, 10 or 20.
     """
@@ -103,5 +114,14 @@ async def post_questions_details(nb_questions: int, question: Question, isUserAu
     return results
 
 
-   
-
+@api.put("/add")
+async def add_question(question: Optional[Question], isAdmin: bool = Depends(get_admin_auth_status)):
+    """new_id = max(, key=lambda u: u.get('user_id'))['user_id']
+    new_user = {
+        'user_id': new_id + 1,
+        'name': user.name,
+        'subscription': user.subscription
+    }
+    users_db.append(new_user)
+    """
+    return question
