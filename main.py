@@ -81,10 +81,6 @@ async def get_root():
     return {"Greetings": "The API is running"}
 
 
-@api.get("/last", responses = responses)
-async def get_last_question():
-    return questions[-1]
-
 @api.post("/questions", responses = responses)
 async def post_questions_details(nb_questions: int, question: Question, isUserAuthenticated: bool = Depends(get_auth_status)):
     """ Returns only the question and the 4 possible answers being given a number as parameter (5, 10 or 20),
@@ -159,3 +155,9 @@ async def add_question(question_to_add: Optional[Question], isAdmin: bool = Depe
     questions.append(new_question)
 
     return new_question
+
+@api.get("/last", responses = responses)
+async def get_last_question(isAdmin: bool = Depends(get_admin_auth_status)):
+    """Allows the admin the check that his question has been added to the database
+    """
+    return questions[-1]
