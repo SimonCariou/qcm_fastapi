@@ -26,6 +26,7 @@ class Question(BaseModel):
     responseB: Optional[str]
     responseC: Optional[str]
     responseD: Optional[str]
+    remark: Optional[str]
 
 responses = {
     200: {"message": "OK"},
@@ -79,6 +80,11 @@ async def NumberOfQuestionsOutOfBoundHandler(request: Request, exception: Number
 async def get_root():
     return {"Greetings": "The API is running"}
 
+
+@api.get("/last", responses = responses)
+async def get_last_question():
+    return questions[-1]
+
 @api.post("/questions", responses = responses)
 async def post_questions_details(nb_questions: int, question: Question, isUserAuthenticated: bool = Depends(get_auth_status)):
     """ Returns only the question and the 4 possible answers being given a number as parameter (5, 10 or 20),
@@ -115,13 +121,41 @@ async def post_questions_details(nb_questions: int, question: Question, isUserAu
 
 
 @api.put("/add")
-async def add_question(question: Optional[Question], isAdmin: bool = Depends(get_admin_auth_status)):
-    """new_id = max(, key=lambda u: u.get('user_id'))['user_id']
-    new_user = {
-        'user_id': new_id + 1,
-        'name': user.name,
-        'subscription': user.subscription
-    }
-    users_db.append(new_user)
+async def add_question(question_to_add: Optional[Question], isAdmin: bool = Depends(get_admin_auth_status)):
+    """ Allow the admin to add a question in the database.
+    In the request body, the admin should specify the following body
+
+       {
+            "question": "string",
+            "subject": [
+                "string"
+            ],
+            "use": "string",
+            "correct": "string",
+            "responseA": "string",
+            "responseB": "string",
+            "responseC": "string",
+            "responseD": "string",
+            "remark": "string"
+        }
+
+        Note that the question_id is calculated automatically based on existing ids so no need to add it manually in the request.
+        If somehow the admin sets it in the request, it will be overriden and calculated based on the latest one in the db + 1
     """
-    return question
+    new_id = max(questions, key=lambda u: u.get('question_id'))['question_id']
+    new_question = {
+        'question_id': new_id + 1,
+        'question': question_to_add.question,
+        'use':  question_to_add.use,
+        'subject':  question_to_add.subject,
+        'correct':  question_to_add.correct,
+        'responseA':  question_to_add.responseA,
+        'responseB':  question_to_add.responseB,
+        'responseC':  question_to_add.responseC,
+        'responseD':  question_to_add.responseD,
+        'remark':  question_to_add.remark,
+    }
+
+    questions.append(new_question)
+
+    return new_question

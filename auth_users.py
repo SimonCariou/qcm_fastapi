@@ -16,6 +16,6 @@ authorized_users = {
     },
     "admin": {
         "username": "admin",
-        "hashed_password": pwd_context.hash('4dm1N '),
+        "hashed_password": pwd_context.hash('4dm1N'),
     }
 }
